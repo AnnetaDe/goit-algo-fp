@@ -7,6 +7,7 @@ class Tree:
     def __init__(self, size=10):
         self.root = None
         self.size = size
+        self.cmap = plt.get_cmap("viridis")  # Use a gradient colormap
 
     class TreeNode:
         def __init__(self, value):
@@ -69,11 +70,12 @@ class Tree:
     def add(self, key):
         self.root = self.insert(self.root, key)
 
-    def _draw_pythagoras(self, ax, node, x, y, size, angle):
+    def _draw_pythagoras(self, ax, node, x, y, size, angle, depth=0):
         if not node:
             return
 
         angle_rad = np.radians(angle)
+        color = self.cmap(depth / 10)
 
         p1 = np.array([x, y])
         p2 = np.array([x + size * np.cos(angle_rad), y + size * np.sin(angle_rad)])
@@ -87,37 +89,50 @@ class Tree:
 
         square = np.array([p1, p2, p3, p4, p1])
         ax.fill(
-            square[:, 0], square[:, 1], color="brown", edgecolor="black", linewidth=0.5
+            square[:, 0], square[:, 1], color=color, edgecolor="black", linewidth=1.2
         )
 
         new_size = size * np.sqrt(2) / 2
         rotation_angle = 45
 
-        # Recur left
         if node.left:
             left_x = p4[0]
             left_y = p4[1]
+            print(left_x, left_y)
+            left_x = p4[0]
+            left_y = p4[1]
             self._draw_pythagoras(
-                ax, node.left, left_x, left_y, new_size, angle + rotation_angle
+                ax,
+                node.left,
+                left_x,
+                left_y,
+                new_size,
+                angle + rotation_angle,
+                depth + 1,
             )
-            print("left", left_x, left_y, new_size, angle + rotation_angle)
 
-        # Recur right
         if node.right:
-            right_x = p3[0]
-            right_y = p3[1]
-            self._draw_pythagoras(ax, node.right, right_x, right_y, new_size, angle)
-            print("right", right_x, right_y, new_size, angle)
+            right_x = p2[0]
+            right_y = p2[1]
+            self._draw_pythagoras(
+                ax,
+                node.right,
+                right_x,
+                right_y,
+                new_size,
+                angle - rotation_angle,
+                depth + 1,
+            )
 
     def draw_pythagoras(self, ax):
         ax.set_aspect("equal")
         ax.axis("off")
-        self._draw_pythagoras(ax, self.root, x=0, y=0, size=self.size, angle=0)
+        self._draw_pythagoras(ax, self.root, x=0, y=0, size=self.size, angle=45)
 
 
 if __name__ == "__main__":
     tree = Tree(size=10)
-    leaves = [random.randint(1, 100) for _ in range(12)]
+    leaves = [random.randint(1, 100) for _ in range(36)]
 
     for leaf in leaves:
         tree.add(leaf)
